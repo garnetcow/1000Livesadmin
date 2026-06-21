@@ -72,6 +72,36 @@
   .placeholder{text-align:center;padding:48px 20px;color:var(--sub)}
   .placeholder .big{font-size:40px;margin-bottom:12px}
   .reload{font-size:12px;color:var(--teal);background:transparent;border:1px solid var(--teal);border-radius:8px;padding:6px 14px}
+  /* 导入/回收站 */
+  .row-line{display:flex;align-items:center;gap:12px;margin:14px 0}
+  .row-line label{font-size:13px;color:var(--sub)}
+  .mini-input{width:100px;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--txt);font-size:14px}
+  .big-input{width:100%;min-height:140px;margin-top:6px;padding:12px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.2);color:var(--txt);font-size:13px;font-family:ui-monospace,Menlo,monospace;resize:vertical}
+  .panel-head{display:flex;align-items:center;justify-content:space-between}
+  .sub-line{font-size:13px;color:var(--sub);margin:8px 0}
+  .btn-main{margin-top:16px;padding:11px 22px;border:none;border-radius:10px;font-size:14px;font-weight:700;color:#06202a;background:linear-gradient(90deg,var(--teal),var(--pink))}
+  .table-wrap{overflow-x:auto;margin-top:10px}
+  table.dt{width:100%;border-collapse:collapse;font-size:13px}
+  table.dt th,table.dt td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap;color:var(--txt)}
+  table.dt th{color:var(--sub);font-weight:600;font-size:12px}
+  table.dt td.wrap{white-space:normal;max-width:260px}
+  .op-link{color:var(--teal);cursor:pointer;font-size:12px}
+  .op-link.danger{color:var(--err)}
+  .op-link+.op-link{margin-left:10px}
+  .pill{display:inline-block;font-size:11px;padding:1px 8px;border-radius:8px;background:rgba(46,158,168,.18);color:var(--teal)}
+  .thumb{width:38px;height:38px;object-fit:cover;border-radius:6px;vertical-align:middle;cursor:pointer;border:1px solid var(--line)}
+  .modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:200;padding:20px}
+  .modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:26px;width:100%;max-width:480px}
+  .modal h3{margin:0 0 14px;font-size:16px}
+  .ed-label{display:block;font-size:13px;color:var(--sub);margin:12px 0 4px}
+  .modal-ops{display:flex;align-items:center;justify-content:flex-end;gap:16px;margin-top:20px}
+  .tab-btn{display:inline-block;font-size:14px;font-weight:600;color:var(--sub);padding:6px 14px;border-radius:8px;cursor:pointer;margin-right:6px}
+  .tab-btn.active{color:var(--txt);background:rgba(46,158,168,.18)}
+  .rank-num{display:inline-block;width:22px;text-align:center;font-weight:700;color:var(--pink)}
+  .score{font-weight:700;color:var(--teal)}
+  .recent-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-left:6px}
+  .muted{color:var(--sub);font-size:12px}
+  .empty-row{color:var(--sub);text-align:center;padding:20px}
   @media(max-width:640px){.side{width:64px}.side .logo,.nav-item span.t,.side .foot .who{display:none}.nav-item{justify-content:center;padding:14px 0}.nav-item .soon{display:none}.main{padding:18px}}
 </style>
 </head>
@@ -113,8 +143,10 @@
   <aside class="side">
     <div class="logo">壹仟个现场</div>
     <div class="nav-item active" data-view="overview" onclick="nav('overview')"><span class="t">📊 数据概览</span></div>
-    <div class="nav-item" data-view="import" onclick="nav('import')"><span class="t">📥 历史活动导入</span><span class="soon">规划中</span></div>
-    <div class="nav-item" data-view="songlib" onclick="nav('songlib')"><span class="t">🎵 歌库建设</span><span class="soon">规划中</span></div>
+    <div class="nav-item" data-view="import" onclick="nav('import')"><span class="t">📥 历史活动导入</span></div>
+    <div class="nav-item" data-view="recycle" onclick="nav('recycle')"><span class="t">🗑 回收站</span></div>
+    <div class="nav-item" data-view="fans" onclick="nav('fans')"><span class="t">👥 粉丝看板</span></div>
+    <div class="nav-item" data-view="songlib" onclick="nav('songlib')"><span class="t">🎵 歌库建设</span></div>
     <div class="nav-item" data-view="analytics" onclick="nav('analytics')"><span class="t">📈 数据看板</span><span class="soon">规划中</span></div>
     <div class="nav-item" data-view="review" onclick="nav('review')"><span class="t">📝 活动复盘</span><span class="soon">规划中</span></div>
     <div class="foot">
@@ -134,6 +166,7 @@
       <div class="cards" id="stat-cards">
         <div class="stat"><div class="n" id="s-events">—</div><div class="l">活动总数</div></div>
         <div class="stat"><div class="n" id="s-published">—</div><div class="l">已发布活动</div></div>
+        <div class="stat"><div class="n" id="s-imported">—</div><div class="l">已导入历史</div></div>
         <div class="stat"><div class="n" id="s-songs">—</div><div class="l">歌库曲目</div></div>
         <div class="stat"><div class="n" id="s-fans">—</div><div class="l">粉丝档案</div></div>
         <div class="stat"><div class="n" id="s-signups">—</div><div class="l">报名记录</div></div>
@@ -147,9 +180,156 @@
       </div>
     </div>
 
-    <!-- 其余占位 -->
-    <div id="view-import" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📥</div><h3>历史活动导入</h3><p>规划中：粘贴或上传历史活动清单，解析后批量写入数据库。</p></div></div></div>
-    <div id="view-songlib" class="hidden"><div class="panel"><div class="placeholder"><div class="big">🎵</div><h3>歌库建设</h3><p>规划中：在大屏上浏览、搜索、批量录入、补标签、去重，沉淀团队曲库资产。</p></div></div></div>
+    <!-- 历史活动导入 -->
+    <div id="view-import" class="hidden">
+      <div class="panel">
+        <h3>① 粘贴历史活动表格</h3>
+        <p>从你的 Excel / 表格里<strong>连表头一起</strong>复制若干行，粘到下面。系统按列名自动识别：日期、主题、正式演出时段、地点、演出类型、自带音响、有屏幕、策划、到场时间要求、带队、舞台管理、场务、（中间一长串人名列＝参演阵容）、是否开放麦、备注。</p>
+        <div class="row-line">
+          <label>年份（日期里只有“5.16”这种没年份时按此补全）</label>
+          <input id="imp-year" type="number" class="mini-input" value="2026" />
+        </div>
+        <textarea id="imp-text" class="big-input" placeholder="把表格（含表头那一行）整段粘贴到这里…" oninput="parseImport()"></textarea>
+        <div id="imp-msg" class="msg info"></div>
+      </div>
+
+      <div class="panel" id="imp-preview-panel" style="display:none">
+        <h3>② 解析预览（确认无误再入库）</h3>
+        <div id="imp-preview-meta" class="sub-line"></div>
+        <div class="table-wrap"><table class="dt" id="imp-preview"></table></div>
+        <button class="btn-main" onclick="doImport()">确认导入这 <span id="imp-count">0</span> 条</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>已导入的历史活动</h3>
+          <button class="reload" onclick="loadImported()">刷新</button>
+        </div>
+        <div id="imp-list-msg" class="sub-line">加载中…</div>
+        <div class="table-wrap"><table class="dt" id="imp-list"></table></div>
+        <input type="file" id="poster-file" accept="image/*" style="display:none" onchange="onPosterPicked(event)" />
+      </div>
+
+      <!-- 编辑简介/链接弹窗 -->
+      <div id="edit-mask" class="modal-mask" style="display:none">
+        <div class="modal">
+          <h3>补充活动资料 · <span id="edit-title"></span></h3>
+          <label class="ed-label">活动简介</label>
+          <textarea id="edit-intro" class="big-input" style="min-height:100px" placeholder="可手动填写，或把小红书笔记正文复制进来再精简"></textarea>
+          <label class="ed-label">云摄影链接（可选）</label>
+          <input id="edit-link" class="mini-input" style="width:100%" placeholder="https://…" />
+          <div class="modal-ops">
+            <button class="op-link" onclick="closeEdit()">取消</button>
+            <button class="btn-main" style="margin:0" onclick="saveEdit()">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 歌曲编辑弹窗 -->
+    <div id="song-edit-mask" class="modal-mask" style="display:none">
+      <div class="modal">
+        <h3>编辑歌曲</h3>
+        <label class="ed-label">歌名</label>
+        <input id="se-title" class="mini-input" style="width:100%" />
+        <label class="ed-label">原唱</label>
+        <input id="se-original" class="mini-input" style="width:100%" />
+        <label class="ed-label">版本（多个用 / 隔开）</label>
+        <input id="se-versions" class="mini-input" style="width:100%" placeholder="如 现场版/钢琴版" />
+        <label class="ed-label">标签（空格隔开）</label>
+        <input id="se-tags" class="mini-input" style="width:100%" placeholder="如 流行 经典" />
+        <label class="ed-label">VJ 链接（可选）</label>
+        <input id="se-vj" class="mini-input" style="width:100%" placeholder="https://…" />
+        <label class="ed-label">热度</label>
+        <input id="se-heat" type="number" class="mini-input" style="width:120px" />
+        <div class="modal-ops">
+          <button class="op-link" onclick="closeSongEdit()">取消</button>
+          <button class="btn-main" style="margin:0" onclick="saveSongEdit()">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 回收站 -->
+    <div id="view-recycle" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>回收站（已删除的导入活动，可恢复）</h3>
+          <button class="reload" onclick="loadRecycle()">刷新</button>
+        </div>
+        <p>删除的活动会留在这里，可随时恢复。删除满 30 天后系统会自动彻底清除，无需手动操作。</p>
+        <div id="rec-msg" class="sub-line">加载中…</div>
+        <div class="table-wrap"><table class="dt" id="rec-list"></table></div>
+      </div>
+    </div>
+
+    <!-- 粉丝看板 -->
+    <div id="view-fans" class="hidden">
+      <div class="cards">
+        <div class="stat"><div class="n" id="f-total">—</div><div class="l">互动粉丝总数</div></div>
+        <div class="stat"><div class="n" id="f-active">—</div><div class="l">近30天活跃</div></div>
+        <div class="stat"><div class="n" id="f-profile">—</div><div class="l">已填档案</div></div>
+        <div class="stat"><div class="n" id="f-inter">—</div><div class="l">总互动次数</div></div>
+      </div>
+      <div class="sub-line" style="margin-top:8px">仅统计在小程序里有过互动（报名/点歌/打call/投票）的线上粉丝；纯线下到场未登录的观众不在其中。</div>
+
+      <div class="panel" style="margin-top:8px">
+        <div class="panel-head">
+          <div>
+            <span class="tab-btn active" id="tab-active" onclick="switchFanTab('active')">🔥 活跃榜</span>
+            <span class="tab-btn" id="tab-value" onclick="switchFanTab('value')">💎 价值榜</span>
+          </div>
+          <button class="reload" onclick="loadFans()">刷新</button>
+        </div>
+        <div id="fan-tip" class="sub-line"></div>
+        <div class="table-wrap"><table class="dt" id="fan-table"></table></div>
+      </div>
+    </div>
+
+    <!-- 歌库建设 -->
+    <div id="view-songlib" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="tab-btn active" id="ltab-browse" onclick="switchLibTab('browse')">📚 浏览管理</span>
+            <span class="tab-btn" id="ltab-import" onclick="switchLibTab('import')">📥 批量录入</span>
+            <span class="tab-btn" id="ltab-dup" onclick="switchLibTab('dup')">🔍 查重合并</span>
+          </div>
+          <button class="reload" onclick="reloadLibTab()">刷新</button>
+        </div>
+
+        <!-- 浏览管理 -->
+        <div id="ltab-browse-body">
+          <div class="row-line" style="flex-wrap:wrap">
+            <input id="lib-kw" class="mini-input" style="width:200px" placeholder="搜歌名/原唱" onkeydown="if(event.key==='Enter')loadLib()" />
+            <select id="lib-tag" class="mini-input" style="width:130px" onchange="loadLib()"><option value="">全部标签</option></select>
+            <select id="lib-sort" class="mini-input" style="width:120px" onchange="loadLib()"><option value="heat">按热度</option><option value="recent">按最近</option></select>
+            <button class="reload" onclick="loadLib()">搜索</button>
+            <span id="lib-selinfo" class="muted"></span>
+            <button class="reload" id="lib-batchbtn" style="display:none" onclick="openBatchTag()">给选中的打标签</button>
+          </div>
+          <div id="lib-msg" class="sub-line">加载中…</div>
+          <div class="table-wrap"><table class="dt" id="lib-table"></table></div>
+        </div>
+
+        <!-- 批量录入 -->
+        <div id="ltab-import-body" style="display:none">
+          <p class="sub-line">每行一首，支持「歌名」「歌名 原唱」「歌名 - 原唱」。标签可在录入后到浏览页批量补，或在每行末尾用 # 号加，如「晴天 周杰伦 #流行#经典」。自动按歌名去重合并。</p>
+          <textarea id="lib-imp-text" class="big-input" placeholder="晴天 周杰伦&#10;告白气球 - 周杰伦 #流行&#10;突然好想你 五月天" oninput="parseLibImport()"></textarea>
+          <div id="lib-imp-msg" class="msg info"></div>
+          <div id="lib-imp-preview-wrap" style="display:none">
+            <div class="sub-line">解析到 <span id="lib-imp-count">0</span> 首：</div>
+            <div class="table-wrap"><table class="dt" id="lib-imp-preview"></table></div>
+            <button class="btn-main" onclick="doLibImport()">确认录入</button>
+          </div>
+        </div>
+
+        <!-- 查重合并 -->
+        <div id="ltab-dup-body" style="display:none">
+          <div class="sub-line"><button class="reload" onclick="loadDup()">扫描重复</button> <span id="dup-msg"></span></div>
+          <div id="dup-list"></div>
+        </div>
+      </div>
+    </div>
     <div id="view-analytics" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📈</div><h3>数据看板</h3><p>规划中：活动热度、报名趋势、投票分布、粉丝画像等多维分析图表。</p></div></div></div>
     <div id="view-review" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📝</div><h3>活动复盘</h3><p>规划中：单场活动的全链路数据汇总，自动生成复盘报告。</p></div></div></div>
   </main>
@@ -246,12 +426,16 @@ function setConn(ok){
   $('conn-dot').className='dot '+(ok?'ok':'err');
   $('conn-text').textContent = ok? '已连接云数据库' : '连接异常';
 }
-var VIEWS=['overview','import','songlib','analytics','review'];
-var TITLES={overview:'数据概览',import:'历史活动导入',songlib:'歌库建设',analytics:'数据看板',review:'活动复盘'};
+var VIEWS=['overview','import','recycle','fans','songlib','analytics','review'];
+var TITLES={overview:'数据概览',import:'历史活动导入',recycle:'回收站',fans:'粉丝看板',songlib:'歌库建设',analytics:'数据看板',review:'活动复盘'};
 function nav(v){
   VIEWS.forEach(function(x){ $('view-'+x).classList.toggle('hidden', x!==v); });
   document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.toggle('active', el.dataset.view===v); });
   $('view-title').textContent = TITLES[v]||'';
+  if(v==='import') loadImported();
+  if(v==='recycle') loadRecycle();
+  if(v==='fans') loadFans();
+  if(v==='songlib'){ loadLibTags(); switchLibTab('browse'); }
 }
 function loadDashboard(){
   api('dashboard').then(function(res){
@@ -259,6 +443,7 @@ function loadDashboard(){
     if(res.code===0 && res.stats){
       var s=res.stats;
       $('s-events').textContent=s.events; $('s-published').textContent=s.published;
+      $('s-imported').textContent=(s.imported!=null?s.imported:'—');
       $('s-songs').textContent=s.songs; $('s-fans').textContent=s.fans;
       $('s-signups').textContent=s.signups; $('s-polls').textContent=s.polls;
       setConn(true);
@@ -266,7 +451,392 @@ function loadDashboard(){
   }).catch(function(){ setConn(false); });
 }
 
-function setMsg(id,t,cls){ var e=$(id); e.textContent=t; e.className='msg '+(cls||''); }
+/* ===== 历史活动导入 ===== */
+var parsedRows = [];
+// 列名 → 标准字段（同义词都映射过来）
+var COLMAP = {
+  '日期':'date','主题':'title','正式演出时段':'timeSlot','演出时段':'timeSlot','时段':'timeSlot',
+  '地点':'location','演出类型':'eventType','类型':'eventType',
+  '自带音响':'sound','有屏幕':'screen','策划':'planner','到场时间要求':'arrive','到场要求':'arrive',
+  '带队':'lead','舞台管理':'stage','场务':'crew','是否开放麦':'openMic','开放麦':'openMic','备注':'remark'
+};
+// 这些是"非人名"的固定列，其余列头都当作人名（参演）
+var FIXED_COLS = Object.keys(COLMAP);
+
+function parseImport(){
+  var raw = $('imp-text').value || '';
+  var lines = raw.split(/\r?\n/).filter(function(l){ return l.trim()!==''; });
+  if(lines.length<2){ parsedRows=[]; $('imp-preview-panel').style.display='none'; setMsg('imp-msg', lines.length===1?'还需要数据行：第一行是表头，下面再粘几行活动':'', 'info'); return; }
+  var headers = lines[0].split('\t').map(function(s){return s.trim();});
+  // 找出固定列的索引 + 人名列的索引
+  var fixedIdx = {}; var nameCols = [];
+  headers.forEach(function(h,i){
+    if(COLMAP[h]) fixedIdx[COLMAP[h]] = i;
+    else if(h && h!=='') nameCols.push({name:h, idx:i});
+  });
+  if(fixedIdx.title==null){ setMsg('imp-msg','没找到「主题」列，请确认粘贴时包含了表头那一行（用 Excel 直接复制即可带制表符分隔）','err'); $('imp-preview-panel').style.display='none'; return; }
+  var year = parseInt($('imp-year').value,10) || (new Date().getFullYear());
+  parsedRows = [];
+  for(var r=1;r<lines.length;r++){
+    var c = lines[r].split('\t');
+    var get=function(f){ var i=fixedIdx[f]; return (i!=null && c[i]!=null)?String(c[i]).trim():''; };
+    var title = get('title'); if(!title) continue;
+    var dateStr = get('date');
+    var parsed = parseDate(dateStr, year, get('timeSlot'));
+    // 参演：人名列里值为 1/√/y/是 的算参演
+    var performers=[];
+    nameCols.forEach(function(nc){ var v=(c[nc.idx]||'').trim(); if(v && /^(1|✓|√|y|yes|是|有)$/i.test(v)) performers.push(nc.name); });
+    parsedRows.push({
+      title:title, date:dateStr, time:parsed.timeText, startTime:parsed.startTime,
+      locationText:get('location'), eventType:get('eventType'),
+      openMic: /^(y|yes|是|开|有|1|✓|√)$/i.test(get('openMic')),
+      remark:get('remark'), planner:get('planner'),
+      performers:performers,
+      ops:{ sound:get('sound'), screen:get('screen'), arrive:get('arrive'), lead:get('lead'), stage:get('stage'), crew:get('crew'), planner:get('planner') }
+    });
+  }
+  renderPreview();
+}
+// "5.16 (周五)" + 时段"15~18" → 文字 + startTime毫秒
+function parseDate(dateStr, year, timeSlot){
+  var m = String(dateStr).match(/(\d{1,2})[.\-/月](\d{1,2})/);
+  var timeText = dateStr || '';
+  var startTime = 0;
+  if(m){
+    var mo=parseInt(m[1],10), d=parseInt(m[2],10);
+    var hh=0, mm=0;
+    var tm = String(timeSlot).match(/(\d{1,2})[:.：]?(\d{2})?/);
+    if(tm){ hh=parseInt(tm[1],10)||0; mm=tm[2]?parseInt(tm[2],10):0; }
+    var dt = new Date(year, mo-1, d, hh, mm, 0);
+    startTime = dt.getTime();
+    timeText = year+'年'+mo+'月'+d+'日'+(timeSlot?(' '+timeSlot):'');
+  }
+  return { timeText:timeText, startTime:startTime };
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];}); }
+function renderPreview(){
+  if(!parsedRows.length){ $('imp-preview-panel').style.display='none'; setMsg('imp-msg','没解析到有效活动行','err'); return; }
+  setMsg('imp-msg','解析成功','ok');
+  $('imp-preview-panel').style.display='';
+  $('imp-count').textContent=parsedRows.length;
+  $('imp-preview-meta').textContent='共 '+parsedRows.length+' 场。请核对“时间/参演”是否正确，无误后点下方按钮入库。';
+  var h='<tr><th>#</th><th>主题</th><th>时间</th><th>地点</th><th>类型</th><th>开放麦</th><th>参演</th><th>备注</th></tr>';
+  parsedRows.forEach(function(r,i){
+    h+='<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.time)+'</td><td>'+esc(r.locationText)+'</td><td>'+esc(r.eventType)+'</td><td>'+(r.openMic?'<span class="pill">开</span>':'')+'</td><td class="wrap">'+(r.performers.length?esc(r.performers.join('、'))+' <span class="pill">'+r.performers.length+'人</span>':'-')+'</td><td class="wrap">'+esc(r.remark)+'</td></tr>';
+  });
+  $('imp-preview').innerHTML=h;
+}
+function doImport(){
+  if(!parsedRows.length){ return; }
+  if(!confirm('确认导入这 '+parsedRows.length+' 场历史活动？导入后状态为“已结束”，不会出现在小程序首页。')) return;
+  setMsg('imp-msg','正在导入…','info');
+  api('importEvents',{rows:parsedRows}).then(function(res){
+    if(res.code===0){
+      setMsg('imp-msg', res.msg||'导入完成', 'ok');
+      $('imp-text').value=''; parsedRows=[]; $('imp-preview-panel').style.display='none';
+      loadImported(); loadDashboard();
+    } else if(res.code===401){ logout(); }
+    else setMsg('imp-msg', res.msg||'导入失败', 'err');
+  }).catch(function(e){ setMsg('imp-msg','请求失败：'+e,'err'); });
+}
+function loadImported(){
+  $('imp-list-msg').textContent='加载中…';
+  api('listImported',{}).then(function(res){
+    if(res.code===401){ logout(); return; }
+    var list=(res&&res.list)||[];
+    impCache={}; list.forEach(function(e){ impCache[e._id]=e; });
+    if(!list.length){ $('imp-list').innerHTML=''; $('imp-list-msg').textContent='还没有导入任何历史活动。'; return; }
+    $('imp-list-msg').textContent='共 '+list.length+' 场（最多显示最近 50 场）';
+    var h='<tr><th>主题</th><th>时间</th><th>类型</th><th>参演</th><th>海报</th><th>导航图</th><th>云摄影</th><th>简介</th><th>操作</th></tr>';
+    list.forEach(function(e){
+      var t=esc(e.title).replace(/'/g,"");
+      // 海报
+      var poster;
+      if(e.posterCount>0){
+        poster=(e.firstPosterUrl?'<img src="'+e.firstPosterUrl+'" class="thumb" onclick="window.open(this.src)"/> ':'')+'<span class="pill">'+e.posterCount+'张</span>';
+      } else poster='<span class="op-link" onclick="pickImg(\''+e._id+'\',\'poster\')">＋上传</span>';
+      // 导航图
+      var nav = e.hasNav ? ((e.navUrl?'<img src="'+e.navUrl+'" class="thumb" onclick="window.open(this.src)"/> ':'')+'<span class="op-link" onclick="pickImg(\''+e._id+'\',\'nav\')">换</span>')
+                         : '<span class="op-link" onclick="pickImg(\''+e._id+'\',\'nav\')">＋上传</span>';
+      // 云摄影码
+      var qr = e.hasQr ? ((e.qrUrl?'<img src="'+e.qrUrl+'" class="thumb" onclick="window.open(this.src)"/> ':'')+'<span class="op-link" onclick="pickImg(\''+e._id+'\',\'cloudqr\')">换</span>')
+                       : '<span class="op-link" onclick="pickImg(\''+e._id+'\',\'cloudqr\')">＋上传</span>';
+      // 简介
+      var intro = e.intro ? '<span class="pill">已填</span>' : '<span style="color:#8aa6b5">空</span>';
+      h+='<tr><td>'+esc(e.title)+'</td><td>'+esc(e.time)+'</td><td>'+esc(e.eventType)+'</td><td>'+((e.performers&&e.performers.length)||0)+'人</td>'+
+         '<td>'+poster+'</td><td>'+nav+'</td><td>'+qr+'</td><td>'+intro+'</td>'+
+         '<td><span class="op-link" onclick="openEdit(\''+e._id+'\')">编辑</span>'+
+         '<span class="op-link danger" onclick="softDel(\''+e._id+'\',\''+t+'\')">删除</span></td></tr>';
+    });
+    $('imp-list').innerHTML=h;
+  }).catch(function(){ $('imp-list-msg').textContent='加载失败'; });
+}
+// 图片上传：field=poster|nav|cloudqr
+var _imgTarget='', _imgField='poster';
+var FIELD_NAME={poster:'海报',nav:'导航图',cloudqr:'云摄影码'};
+function pickImg(id,field){ _imgTarget=id; _imgField=field; $('poster-file').value=''; $('poster-file').click(); }
+function onPosterPicked(ev){
+  var f = ev.target.files && ev.target.files[0];
+  if(!f || !_imgTarget) return;
+  if(f.size > 2*1024*1024){ alert('图片超过 2MB，请先压缩（一般压到 1MB 内即可清晰）'); return; }
+  var ext = (f.name.split('.').pop()||'jpg').toLowerCase();
+  var reader = new FileReader();
+  reader.onload = function(){
+    setMsg('imp-list-msg','正在上传'+(FIELD_NAME[_imgField]||'图片')+'…','info');
+    api('uploadImage',{eventId:_imgTarget, field:_imgField, base64:reader.result, ext:ext}).then(function(res){
+      if(res.code===0){ loadImported(); loadDashboard(); }
+      else if(res.code===401){ logout(); }
+      else { alert(res.msg||'上传失败'); loadImported(); }
+    }).catch(function(e){ alert('上传失败：'+e); });
+  };
+  reader.readAsDataURL(f);
+}
+function softDel(id,title){
+  if(!confirm('把「'+title+'」移入回收站？（可在回收站恢复，30天后自动清除）')) return;
+  api('softDeleteEvent',{eventId:id}).then(function(res){
+    if(res.code===0){ loadImported(); loadDashboard(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 编辑简介/云摄影链接弹窗
+var impCache={}, _editId='';
+function openEdit(id){
+  var e=impCache[id]; if(!e) return;
+  _editId=id;
+  $('edit-title').textContent=e.title;
+  $('edit-intro').value=e.intro||'';
+  $('edit-link').value=e.cloudPhotoLink||'';
+  $('edit-mask').style.display='flex';
+}
+function closeEdit(){ $('edit-mask').style.display='none'; }
+function saveEdit(){
+  api('updateEventFields',{eventId:_editId, intro:$('edit-intro').value, cloudPhotoLink:$('edit-link').value}).then(function(res){
+    if(res.code===0){ closeEdit(); loadImported(); }
+    else if(res.code===401){ logout(); }
+    else alert(res.msg||'保存失败');
+  }).catch(function(e){ alert('保存失败：'+e); });
+}
+
+/* ===== 回收站 ===== */
+function loadRecycle(){
+  $('rec-msg').textContent='加载中…';
+  api('listRecycle',{}).then(function(res){
+    if(res.code===401){ logout(); return; }
+    var list=(res&&res.list)||[];
+    if(!list.length){ $('rec-list').innerHTML=''; $('rec-msg').textContent='回收站是空的。'; return; }
+    $('rec-msg').textContent='共 '+list.length+' 条 · 删除满 30 天会自动清除';
+    var h='<tr><th>主题</th><th>时间</th><th>剩余保留</th><th>操作</th></tr>';
+    list.forEach(function(e){
+      var dl=(e.daysLeft!=null?e.daysLeft:30);
+      h+='<tr><td>'+esc(e.title)+'</td><td>'+esc(e.time)+'</td><td>'+dl+' 天</td>'+
+         '<td><span class="op-link" onclick="restore(\''+e._id+'\')">恢复</span></td></tr>';
+    });
+    $('rec-list').innerHTML=h;
+  }).catch(function(){ $('rec-msg').textContent='加载失败'; });
+}
+function restore(id){
+  api('restoreEvent',{eventId:id}).then(function(res){
+    if(res.code===0){ loadRecycle(); loadDashboard(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+
+/* ===== 粉丝看板 ===== */
+var fanData=null, fanTab='active';
+function loadFans(){
+  $('fan-tip').textContent='加载中…（首次聚合可能要几秒）';
+  $('fan-table').innerHTML='';
+  api('fanDashboard',{}).then(function(res){
+    if(res.code===401){ logout(); return; }
+    if(res.code!==0){ $('fan-tip').textContent=res.msg||'加载失败'; return; }
+    fanData=res;
+    var s=res.stats||{};
+    $('f-total').textContent=s.totalFans||0; $('f-active').textContent=s.activeCount||0;
+    $('f-profile').textContent=s.withProfile||0; $('f-inter').textContent=s.totalInteractions||0;
+    renderFanTab();
+  }).catch(function(){ $('fan-tip').textContent='加载失败'; });
+}
+function switchFanTab(t){
+  fanTab=t;
+  $('tab-active').classList.toggle('active', t==='active');
+  $('tab-value').classList.toggle('active', t==='value');
+  renderFanTab();
+}
+function renderFanTab(){
+  if(!fanData) return;
+  var list = fanTab==='active' ? (fanData.topActive||[]) : (fanData.topValue||[]);
+  if(!list.length){ $('fan-table').innerHTML=''; $('fan-tip').textContent='还没有粉丝互动数据。'; return; }
+  $('fan-tip').textContent = (fanTab==='active'?'按活跃分排序（报名权重最高，含点歌/打call/投票）':'按价值分排序（高频持续 × 近期活跃 + 报名带人影响力）')+' · 显示前 '+list.length+' 名';
+  var scoreLabel = fanTab==='active' ? '活跃分' : '价值分';
+  var h='<tr><th>#</th><th>粉丝</th><th>'+scoreLabel+'</th><th>报名</th><th>带人</th><th>点歌</th><th>打call</th><th>投票</th><th>最近活跃</th><th>档案</th></tr>';
+  list.forEach(function(e,i){
+    var score = fanTab==='active' ? e.active : e.value;
+    var prof = e.profileFull ? '<span class="pill">完整</span>' : (e.hasProfile ? '<span class="muted">部分</span>' : '<span class="muted">无</span>');
+    h+='<tr><td><span class="rank-num">'+(i+1)+'</span></td>'+
+       '<td>'+esc(e.nick)+(e.recent?'<span class="recent-dot" title="近30天活跃"></span>':'')+'</td>'+
+       '<td><span class="score">'+score+'</span></td>'+
+       '<td>'+e.signup+'</td><td>'+e.signupPeople+'</td><td>'+e.request+'</td><td>'+e.call+'</td><td>'+e.vote+'</td>'+
+       '<td class="muted">'+fmtDate(e.lastTs)+'</td><td>'+prof+'</td></tr>';
+  });
+  $('fan-table').innerHTML=h;
+}
+function fmtDate(ts){
+  if(!ts) return '—';
+  var d=new Date(ts), now=Date.now();
+  var days=Math.floor((now-ts)/86400000);
+  if(days<=0) return '今天';
+  if(days<30) return days+'天前';
+  return (d.getMonth()+1)+'月'+d.getDate()+'日';
+}
+
+/* ===== 歌库建设 ===== */
+var libTab='browse', libCache={}, libSel={}, libTagsList=[];
+function switchLibTab(t){
+  libTab=t;
+  ['browse','import','dup'].forEach(function(x){
+    $('ltab-'+x).classList.toggle('active', x===t);
+    $('ltab-'+x+'-body').style.display = x===t?'':'none';
+  });
+  if(t==='browse') loadLib();
+  if(t==='dup') $('dup-list').innerHTML='';
+}
+function reloadLibTab(){ if(libTab==='browse')loadLib(); else if(libTab==='dup')loadDup(); }
+function loadLibTags(){
+  api('libTags',{}).then(function(res){
+    if(res.code===0){ libTagsList=res.tags||[];
+      var sel=$('lib-tag'); var cur=sel.value;
+      sel.innerHTML='<option value="">全部标签</option>'+libTagsList.map(function(t){return '<option value="'+esc(t)+'">'+esc(t)+'</option>';}).join('');
+      sel.value=cur;
+    }
+  });
+}
+function loadLib(){
+  $('lib-msg').textContent='加载中…';
+  libSel={}; updateSelInfo();
+  api('libList',{kw:$('lib-kw').value.trim(), tag:$('lib-tag').value, sort:$('lib-sort').value}).then(function(res){
+    if(res.code===401){ logout(); return; }
+    var songs=(res&&res.songs)||[]; libCache={}; songs.forEach(function(s){libCache[s._id]=s;});
+    if(!songs.length){ $('lib-table').innerHTML=''; $('lib-msg').textContent='没有匹配的歌曲。'; return; }
+    $('lib-msg').textContent='共 '+(res.total||songs.length)+' 首，显示 '+songs.length+' 首';
+    var h='<tr><th></th><th>歌名</th><th>原唱</th><th>版本</th><th>标签</th><th>热度</th><th>来源</th><th>操作</th></tr>';
+    songs.forEach(function(s){
+      h+='<tr><td><input type="checkbox" onchange="toggleSel(\''+s._id+'\',this.checked)"/></td>'+
+         '<td>'+esc(s.title)+'</td><td>'+esc(s.original||'')+'</td>'+
+         '<td class="muted">'+esc((s.versions||[]).join('/'))+'</td>'+
+         '<td class="wrap">'+((s.tags||[]).map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join(' ')||'<span class="muted">-</span>')+'</td>'+
+         '<td>'+(s.heat||0)+'</td><td class="muted">'+srcName(s.source)+'</td>'+
+         '<td><span class="op-link" onclick="openSongEdit(\''+s._id+'\')">编辑</span>'+
+         '<span class="op-link danger" onclick="delSong(\''+s._id+'\',\''+esc(s.title).replace(/'/g,"")+'\')">删除</span></td></tr>';
+    });
+    $('lib-table').innerHTML=h;
+  }).catch(function(){ $('lib-msg').textContent='加载失败'; });
+}
+function srcName(s){ return s==='wish'?'许愿':(s==='sediment'?'编排沉淀':(s==='manual'?'手动':s||'')); }
+function toggleSel(id,on){ if(on)libSel[id]=1; else delete libSel[id]; updateSelInfo(); }
+function updateSelInfo(){
+  var n=Object.keys(libSel).length;
+  $('lib-selinfo').textContent = n?('已选 '+n+' 首'):'';
+  $('lib-batchbtn').style.display = n?'':'none';
+}
+function delSong(id,title){
+  if(!confirm('确定从歌库删除「'+title+'」？此操作不可恢复。')) return;
+  api('libDelete',{songId:id}).then(function(res){
+    if(res.code===0){ loadLib(); loadDashboard(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 编辑弹窗（复用补充资料弹窗样式）
+var _songEditId='';
+function openSongEdit(id){
+  var s=libCache[id]; if(!s) return; _songEditId=id;
+  $('se-title').value=s.title||''; $('se-original').value=s.original||'';
+  $('se-versions').value=(s.versions||[]).join('/'); $('se-tags').value=(s.tags||[]).join(' ');
+  $('se-vj').value=s.vjLink||''; $('se-heat').value=s.heat||0;
+  $('song-edit-mask').style.display='flex';
+}
+function closeSongEdit(){ $('song-edit-mask').style.display='none'; }
+function saveSongEdit(){
+  var patch={ title:$('se-title').value, original:$('se-original').value,
+    versions:$('se-versions').value.split(/[\/、,，]/).map(function(s){return s.trim();}).filter(Boolean),
+    tags:$('se-tags').value.split(/[\s,，#]+/).map(function(s){return s.trim();}).filter(Boolean),
+    vjLink:$('se-vj').value, hasVj:!!$('se-vj').value.trim(), heat:$('se-heat').value };
+  api('libUpdate',{songId:_songEditId, patch:patch}).then(function(res){
+    if(res.code===0){ closeSongEdit(); loadLib(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 批量打标签
+function openBatchTag(){
+  var t=prompt('给选中的 '+Object.keys(libSel).length+' 首歌打标签（多个用空格隔开）：');
+  if(t==null) return;
+  var tags=t.split(/[\s,，#]+/).map(function(s){return s.trim();}).filter(Boolean);
+  if(!tags.length){ alert('没填标签'); return; }
+  api('libBatchTag',{songIds:Object.keys(libSel), tags:tags}).then(function(res){
+    if(res.code===0){ alert(res.msg||'已补标签'); loadLib(); loadLibTags(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 批量录入解析
+var libImpRows=[];
+function parseLibImport(){
+  var lines=($('lib-imp-text').value||'').split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
+  libImpRows=lines.map(function(line){
+    var s=line.replace(/^\d+[\.、,，:：\)\s]+/,'');
+    var tags=[]; s=s.replace(/#([^#\s]+)/g,function(m,t){tags.push(t);return '';}).trim();
+    var title=s, original='';
+    var m=s.split(/\s*[-—\/｜|]\s*|\s{1,}/);
+    if(m.length>=2){ title=m[0].trim(); original=m.slice(1).join(' ').trim(); }
+    return {title:title, original:original, tags:tags};
+  }).filter(function(x){return x.title;});
+  if(!libImpRows.length){ $('lib-imp-preview-wrap').style.display='none'; setMsg('lib-imp-msg','',''); return; }
+  setMsg('lib-imp-msg','解析成功','ok');
+  $('lib-imp-preview-wrap').style.display=''; $('lib-imp-count').textContent=libImpRows.length;
+  var h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>标签</th></tr>';
+  libImpRows.forEach(function(r,i){ h+='<tr><td>'+(i+1)+'</td><td>'+esc(r.title)+'</td><td>'+esc(r.original)+'</td><td>'+(r.tags.map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join(' ')||'-')+'</td></tr>'; });
+  $('lib-imp-preview').innerHTML=h;
+}
+function doLibImport(){
+  if(!libImpRows.length) return;
+  setMsg('lib-imp-msg','正在录入…','info');
+  api('libImport',{rows:libImpRows}).then(function(res){
+    if(res.code===0){ setMsg('lib-imp-msg',res.msg||'录入完成','ok'); $('lib-imp-text').value=''; libImpRows=[]; $('lib-imp-preview-wrap').style.display='none'; loadDashboard(); }
+    else if(res.code===401){ logout(); }
+    else setMsg('lib-imp-msg',res.msg||'录入失败','err');
+  }).catch(function(e){ setMsg('lib-imp-msg','请求失败：'+e,'err'); });
+}
+// 查重合并
+function loadDup(){
+  $('dup-msg').textContent='扫描中…'; $('dup-list').innerHTML='';
+  api('libFindDup',{}).then(function(res){
+    if(res.code===401){ logout(); return; }
+    var dups=(res&&res.dups)||[];
+    if(!dups.length){ $('dup-msg').textContent='没有发现重复歌曲，歌库很干净 👍'; return; }
+    $('dup-msg').textContent='发现 '+dups.length+' 组重复';
+    var h='';
+    dups.forEach(function(g,gi){
+      h+='<div class="panel" style="margin-top:10px"><div class="sub-line">重复组 '+(gi+1)+'：「'+esc(g.songs[0].title)+'」共 '+g.songs.length+' 条</div>';
+      h+='<div class="table-wrap"><table class="dt"><tr><th>保留</th><th>歌名</th><th>原唱</th><th>热度</th><th>标签</th></tr>';
+      g.songs.forEach(function(s,i){
+        h+='<tr><td><input type="radio" name="keep_'+gi+'" value="'+s._id+'"'+(i===0?' checked':'')+'/></td>'+
+           '<td>'+esc(s.title)+'</td><td>'+esc(s.original||'')+'</td><td>'+(s.heat||0)+'</td><td>'+((s.tags||[]).join('、')||'-')+'</td></tr>';
+      });
+      h+='</table></div><button class="reload" onclick="doMerge('+gi+',[\''+g.songs.map(function(s){return s._id;}).join("','")+'\'])">合并这组（选中的为保留项）</button></div>';
+    });
+    $('dup-list').innerHTML=h;
+  }).catch(function(){ $('dup-msg').textContent='扫描失败'; });
+}
+function doMerge(gi, ids){
+  var sel=document.querySelector('input[name="keep_'+gi+'"]:checked');
+  if(!sel){ alert('请先选保留项'); return; }
+  var keepId=sel.value;
+  var others=ids.filter(function(x){return x!==keepId;});
+  if(!confirm('将其余 '+others.length+' 条合并进保留项（版本/歌手/标签合并，热度累加），其余删除？')) return;
+  var i=0;
+  (function next(){
+    if(i>=others.length){ loadDup(); loadDashboard(); return; }
+    api('libMerge',{keepId:keepId, fromId:others[i]}).then(function(res){
+      if(res.code===401){ logout(); return; }
+      i++; next();
+    }).catch(function(){ i++; next(); });
+  })();
+}
+
+function setMsg(id,t,cls){ var e=$(id); if(!e) return; e.textContent=t; e.className='msg '+(cls||''); }
 
 boot();
 </script>
