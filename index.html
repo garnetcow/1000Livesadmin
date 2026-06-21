@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>壹仟个现场 · 网页后台</title>
+<style>
+  :root{
+    --teal:#2E9EA8; --pink:#C05A86; --bg:#0f1f2e; --bg2:#13283b;
+    --card:rgba(255,255,255,.05); --line:rgba(255,255,255,.1);
+    --txt:#eaf6f8; --sub:#a9c4d4; --ok:#3fbf7f; --err:#ff7a7a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:linear-gradient(180deg,var(--bg),var(--bg2));color:var(--txt);min-height:100vh}
+  button{font-family:inherit;cursor:pointer}
+  input{font-family:inherit}
+  .hidden{display:none!important}
+
+  /* ===== 登录 / 配置 ===== */
+  .auth-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .auth-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);
+    border-radius:18px;padding:36px 30px;backdrop-filter:blur(6px)}
+  .brand{text-align:center;margin-bottom:8px}
+  .brand h1{margin:0;font-size:24px;font-weight:800;
+    background:linear-gradient(90deg,var(--teal),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .brand p{margin:6px 0 0;color:var(--sub);font-size:13px}
+  .field{margin-top:18px}
+  .field label{display:block;font-size:13px;color:var(--sub);margin-bottom:6px}
+  .field input{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(0,0,0,.2);color:var(--txt);font-size:15px;outline:none}
+  .field input:focus{border-color:var(--teal)}
+  .btn{width:100%;margin-top:22px;padding:13px;border:none;border-radius:10px;font-size:15px;font-weight:700;
+    color:#06202a;background:linear-gradient(90deg,var(--teal),var(--pink))}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--sub);font-weight:500;margin-top:12px}
+  .btn:active{opacity:.85}
+  .msg{margin-top:14px;font-size:13px;text-align:center;min-height:18px}
+  .msg.ok{color:var(--ok)} .msg.err{color:var(--err)} .msg.info{color:var(--sub)}
+  .switch-line{text-align:center;margin-top:16px;font-size:13px;color:var(--sub)}
+  .switch-line a{color:var(--teal);cursor:pointer;text-decoration:underline}
+  .url-tip{font-size:12px;color:var(--sub);margin-top:8px;line-height:1.5;word-break:break-all}
+
+  /* ===== 后台主界面 ===== */
+  .app{display:flex;min-height:100vh}
+  .side{width:210px;flex-shrink:0;background:rgba(0,0,0,.25);border-right:1px solid var(--line);
+    padding:22px 0;display:flex;flex-direction:column}
+  .side .logo{padding:0 22px 18px;font-size:18px;font-weight:800;
+    background:linear-gradient(90deg,var(--teal),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .nav-item{padding:12px 22px;color:var(--sub);font-size:14px;display:flex;align-items:center;gap:10px;border-left:3px solid transparent}
+  .nav-item:hover{color:var(--txt);background:rgba(255,255,255,.03)}
+  .nav-item.active{color:var(--txt);border-left-color:var(--teal);background:rgba(46,158,168,.12)}
+  .nav-item .soon{font-size:10px;color:var(--pink);border:1px solid var(--pink);border-radius:8px;padding:0 6px;margin-left:auto}
+  .side .foot{margin-top:auto;padding:0 22px}
+  .side .foot .who{font-size:12px;color:var(--sub);margin-bottom:8px}
+  .logout{font-size:12px;color:var(--sub);background:transparent;border:1px solid var(--line);border-radius:8px;padding:7px 0;width:100%}
+
+  .main{flex:1;padding:28px 32px;min-width:0}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px}
+  .topbar h2{margin:0;font-size:20px}
+  .conn{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--sub)}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--sub)}
+  .dot.ok{background:var(--ok)} .dot.err{background:var(--err)}
+
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+  .stat .n{font-size:30px;font-weight:800;color:var(--teal)}
+  .stat .l{font-size:13px;color:var(--sub);margin-top:6px}
+
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:28px;margin-top:8px}
+  .panel h3{margin:0 0 10px;font-size:16px}
+  .panel p{color:var(--sub);font-size:14px;line-height:1.7;margin:6px 0}
+  .placeholder{text-align:center;padding:48px 20px;color:var(--sub)}
+  .placeholder .big{font-size:40px;margin-bottom:12px}
+  .reload{font-size:12px;color:var(--teal);background:transparent;border:1px solid var(--teal);border-radius:8px;padding:6px 14px}
+  @media(max-width:640px){.side{width:64px}.side .logo,.nav-item span.t,.side .foot .who{display:none}.nav-item{justify-content:center;padding:14px 0}.nav-item .soon{display:none}.main{padding:18px}}
+</style>
+</head>
+<body>
+
+<!-- ============ 配置网关 URL ============ -->
+<div id="screen-config" class="auth-wrap hidden">
+  <div class="auth-card">
+    <div class="brand"><h1>壹仟个现场 · 后台</h1><p>首次使用，请先填入网关地址</p></div>
+    <div class="field">
+      <label>网关 URL（webAdmin 云函数的 HTTP 访问地址）</label>
+      <input id="cfg-url" type="text" placeholder="https://...tcb.qcloud.la/webAdmin 或你开通的访问路径" />
+      <div class="url-tip">在云开发控制台「云函数 → webAdmin → 触发管理 / HTTP 访问服务」里开通后会得到一个网址，粘贴到这里。详见部署文档。</div>
+    </div>
+    <button class="btn" onclick="saveUrl()">保存并测试连接</button>
+    <div id="cfg-msg" class="msg info"></div>
+  </div>
+</div>
+
+<!-- ============ 登录 / 设密码 ============ -->
+<div id="screen-auth" class="auth-wrap hidden">
+  <div class="auth-card">
+    <div class="brand"><h1>壹仟个现场 · 后台</h1><p id="auth-sub">请输入管理员密码登录</p></div>
+    <div class="field">
+      <label id="auth-label">管理员密码</label>
+      <input id="auth-pw" type="password" placeholder="输入密码" onkeydown="if(event.key==='Enter')doAuth()" />
+    </div>
+    <button class="btn" id="auth-btn" onclick="doAuth()">登录</button>
+    <div id="auth-msg" class="msg"></div>
+    <div class="switch-line" id="auth-switch">
+      首次使用、还没设过密码？<a onclick="setMode('init')">点这里设置密码</a>
+    </div>
+    <button class="btn ghost" onclick="goConfig()">重新配置网关地址</button>
+  </div>
+</div>
+
+<!-- ============ 后台主界面 ============ -->
+<div id="screen-app" class="app hidden">
+  <aside class="side">
+    <div class="logo">壹仟个现场</div>
+    <div class="nav-item active" data-view="overview" onclick="nav('overview')"><span class="t">📊 数据概览</span></div>
+    <div class="nav-item" data-view="import" onclick="nav('import')"><span class="t">📥 历史活动导入</span><span class="soon">规划中</span></div>
+    <div class="nav-item" data-view="songlib" onclick="nav('songlib')"><span class="t">🎵 歌库建设</span><span class="soon">规划中</span></div>
+    <div class="nav-item" data-view="analytics" onclick="nav('analytics')"><span class="t">📈 数据看板</span><span class="soon">规划中</span></div>
+    <div class="nav-item" data-view="review" onclick="nav('review')"><span class="t">📝 活动复盘</span><span class="soon">规划中</span></div>
+    <div class="foot">
+      <div class="who">已登录 · 管理员</div>
+      <button class="logout" onclick="logout()">退出登录</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <h2 id="view-title">数据概览</h2>
+      <div class="conn"><span id="conn-dot" class="dot"></span><span id="conn-text">未连接</span></div>
+    </div>
+
+    <!-- 概览 -->
+    <div id="view-overview">
+      <div class="cards" id="stat-cards">
+        <div class="stat"><div class="n" id="s-events">—</div><div class="l">活动总数</div></div>
+        <div class="stat"><div class="n" id="s-published">—</div><div class="l">已发布活动</div></div>
+        <div class="stat"><div class="n" id="s-songs">—</div><div class="l">歌库曲目</div></div>
+        <div class="stat"><div class="n" id="s-fans">—</div><div class="l">粉丝档案</div></div>
+        <div class="stat"><div class="n" id="s-signups">—</div><div class="l">报名记录</div></div>
+        <div class="stat"><div class="n" id="s-polls">—</div><div class="l">歌单征集场次</div></div>
+      </div>
+      <div style="margin-top:18px"><button class="reload" onclick="loadDashboard()">刷新数据</button></div>
+      <div class="panel" style="margin-top:18px">
+        <h3>欢迎使用网页后台</h3>
+        <p>这里和小程序共用同一个云数据库，数据实时同步。左侧的「历史活动导入」「歌库建设」「数据看板」「活动复盘」会在后续逐步开放。</p>
+        <p>当前已打通：网关连接、登录鉴权、数据概览。下一步将开发历史活动的批量导入。</p>
+      </div>
+    </div>
+
+    <!-- 其余占位 -->
+    <div id="view-import" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📥</div><h3>历史活动导入</h3><p>规划中：粘贴或上传历史活动清单，解析后批量写入数据库。</p></div></div></div>
+    <div id="view-songlib" class="hidden"><div class="panel"><div class="placeholder"><div class="big">🎵</div><h3>歌库建设</h3><p>规划中：在大屏上浏览、搜索、批量录入、补标签、去重，沉淀团队曲库资产。</p></div></div></div>
+    <div id="view-analytics" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📈</div><h3>数据看板</h3><p>规划中：活动热度、报名趋势、投票分布、粉丝画像等多维分析图表。</p></div></div></div>
+    <div id="view-review" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📝</div><h3>活动复盘</h3><p>规划中：单场活动的全链路数据汇总，自动生成复盘报告。</p></div></div></div>
+  </main>
+</div>
+
+<script>
+/* ====== 极简前端逻辑：仅依赖 fetch，无框架，可直接挂 GitHub Pages ====== */
+var LS_URL='yiqian_admin_url', LS_TOKEN='yiqian_admin_token';
+var gatewayUrl = localStorage.getItem(LS_URL) || '';
+var token = localStorage.getItem(LS_TOKEN) || '';
+var authMode = 'login'; // login | init
+
+function $(id){return document.getElementById(id)}
+function show(id){['screen-config','screen-auth','screen-app'].forEach(function(s){$(s).classList.add('hidden')});$(id).classList.remove('hidden')}
+
+/* 调网关 */
+function api(action, data){
+  data = data || {};
+  data.action = action;
+  if(token) data.token = token;
+  return fetch(gatewayUrl, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  }).then(function(r){return r.json()});
+}
+
+/* ---- 启动路由 ---- */
+function boot(){
+  if(!gatewayUrl){ show('screen-config'); return; }
+  if(!token){ show('screen-auth'); setMode('login'); return; }
+  enterApp();
+}
+
+/* ---- 配置网关 ---- */
+function goConfig(){ show('screen-config'); $('cfg-url').value = gatewayUrl; }
+function saveUrl(){
+  var u = $('cfg-url').value.trim();
+  if(!u){ setMsg('cfg-msg','请填入网关地址','err'); return; }
+  gatewayUrl = u; localStorage.setItem(LS_URL, u);
+  setMsg('cfg-msg','正在测试连接…','info');
+  api('ping').then(function(res){
+    if(res && res.ok){ setMsg('cfg-msg','连接成功 ✓ 环境：'+res.env,'ok'); setTimeout(function(){ show('screen-auth'); setMode('login'); },700); }
+    else { setMsg('cfg-msg','连接到了，但返回异常：'+JSON.stringify(res),'err'); }
+  }).catch(function(e){ setMsg('cfg-msg','连接失败，请检查网址是否正确、HTTP 访问是否已开通。'+e,'err'); });
+}
+
+/* ---- 登录 / 设密码 ---- */
+function setMode(m){
+  authMode = m;
+  if(m==='init'){
+    $('auth-sub').textContent='首次使用，给后台设置一个登录密码';
+    $('auth-label').textContent='设置密码（至少 6 位）';
+    $('auth-btn').textContent='设置密码';
+    $('auth-switch').innerHTML='已经设过密码？<a onclick="setMode(\'login\')">返回登录</a>';
+  } else {
+    $('auth-sub').textContent='请输入管理员密码登录';
+    $('auth-label').textContent='管理员密码';
+    $('auth-btn').textContent='登录';
+    $('auth-switch').innerHTML='首次使用、还没设过密码？<a onclick="setMode(\'init\')">点这里设置密码</a>';
+  }
+  setMsg('auth-msg','','');
+}
+function doAuth(){
+  var pw = $('auth-pw').value;
+  if(!pw){ setMsg('auth-msg','请输入密码','err'); return; }
+  if(authMode==='init'){
+    setMsg('auth-msg','正在设置…','info');
+    api('initPassword',{password:pw}).then(function(res){
+      if(res.code===0){ setMsg('auth-msg','密码已设置，正在登录…','ok'); doLogin(pw); }
+      else setMsg('auth-msg',res.msg||'设置失败','err');
+    }).catch(function(e){ setMsg('auth-msg','请求失败：'+e,'err'); });
+  } else {
+    doLogin(pw);
+  }
+}
+function doLogin(pw){
+  setMsg('auth-msg','正在登录…','info');
+  api('login',{password:pw}).then(function(res){
+    if(res.code===0 && res.token){
+      token=res.token; localStorage.setItem(LS_TOKEN,token);
+      setMsg('auth-msg','登录成功','ok'); enterApp();
+    } else setMsg('auth-msg',res.msg||'登录失败','err');
+  }).catch(function(e){ setMsg('auth-msg','请求失败：'+e,'err'); });
+}
+function logout(){ token=''; localStorage.removeItem(LS_TOKEN); show('screen-auth'); setMode('login'); $('auth-pw').value=''; }
+
+/* ---- 进入后台 ---- */
+function enterApp(){
+  show('screen-app'); nav('overview');
+  api('ping').then(function(res){ setConn(!!(res&&res.ok)); }).catch(function(){ setConn(false); });
+  loadDashboard();
+}
+function setConn(ok){
+  $('conn-dot').className='dot '+(ok?'ok':'err');
+  $('conn-text').textContent = ok? '已连接云数据库' : '连接异常';
+}
+var VIEWS=['overview','import','songlib','analytics','review'];
+var TITLES={overview:'数据概览',import:'历史活动导入',songlib:'歌库建设',analytics:'数据看板',review:'活动复盘'};
+function nav(v){
+  VIEWS.forEach(function(x){ $('view-'+x).classList.toggle('hidden', x!==v); });
+  document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.toggle('active', el.dataset.view===v); });
+  $('view-title').textContent = TITLES[v]||'';
+}
+function loadDashboard(){
+  api('dashboard').then(function(res){
+    if(res.code===401){ logout(); return; }
+    if(res.code===0 && res.stats){
+      var s=res.stats;
+      $('s-events').textContent=s.events; $('s-published').textContent=s.published;
+      $('s-songs').textContent=s.songs; $('s-fans').textContent=s.fans;
+      $('s-signups').textContent=s.signups; $('s-polls').textContent=s.polls;
+      setConn(true);
+    }
+  }).catch(function(){ setConn(false); });
+}
+
+function setMsg(id,t,cls){ var e=$(id); e.textContent=t; e.className='msg '+(cls||''); }
+
+boot();
+</script>
+</body>
+</html>
