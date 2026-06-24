@@ -304,13 +304,23 @@
 
         <!-- 浏览管理 -->
         <div id="ltab-browse-body">
-          <div class="row-line" style="flex-wrap:wrap">
+          <div class="row-line" style="flex-wrap:wrap;gap:8px">
             <input id="lib-kw" class="mini-input" style="width:200px" placeholder="搜歌名/原唱" onkeydown="if(event.key==='Enter')loadLib()" />
             <select id="lib-tag" class="mini-input" style="width:130px" onchange="loadLib()"><option value="">全部标签</option></select>
             <select id="lib-sort" class="mini-input" style="width:120px" onchange="loadLib()"><option value="heat">按热度</option><option value="recent">按最近</option></select>
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:#ccc;cursor:pointer">
+              <input type="checkbox" id="lib-no-original" onchange="loadLib()" /> 仅看原唱空缺
+            </label>
             <button class="reload" onclick="loadLib()">搜索</button>
+          </div>
+          <div class="row-line" style="flex-wrap:wrap;gap:8px;margin-top:6px;min-height:28px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:#ccc;cursor:pointer">
+              <input type="checkbox" id="lib-selectall" onchange="toggleSelectAll(this.checked)" /> 全选当前页
+            </label>
             <span id="lib-selinfo" class="muted"></span>
-            <button class="reload" id="lib-batchbtn" style="display:none" onclick="openBatchTag()">给选中的打标签</button>
+            <button class="reload" id="lib-batchbtn-tag" style="display:none" onclick="openBatchTag()">打标签</button>
+            <button class="reload" id="lib-batchbtn-orig" style="display:none" onclick="openBatchSetOriginal()">批量填原唱</button>
+            <button class="btn-danger" id="lib-batchbtn-del" style="display:none" onclick="batchDeleteSongs()">批量删除</button>
           </div>
           <div id="lib-msg" class="sub-line">加载中…</div>
           <div class="table-wrap"><table class="dt" id="lib-table"></table></div>
@@ -349,15 +359,15 @@
         <div id="analytics-msg" class="sub-line">点击刷新加载数据</div>
         <!-- 许愿热度榜 -->
         <div id="atab-wish-body">
-          <div class="table-wrap"><table class="dt" id="wish-rank-table"></table></div>
+          <div class="table-wrap"><table class="dt" id="wish-rank-table"></table></div><div id="wish-rank-pager"></div>
         </div>
         <!-- 常唱歌曲榜 -->
         <div id="atab-play-body" style="display:none">
-          <div class="table-wrap"><table class="dt" id="play-rank-table"></table></div>
+          <div class="table-wrap"><table class="dt" id="play-rank-table"></table></div><div id="play-rank-pager"></div>
         </div>
         <!-- 征集候选 -->
         <div id="atab-collect-body" style="display:none">
-          <div class="table-wrap"><table class="dt" id="collect-rank-table"></table></div>
+          <div class="table-wrap"><table class="dt" id="collect-rank-table"></table></div><div id="collect-rank-pager"></div>
         </div>
       </div>
     </div>
@@ -756,14 +766,14 @@ function loadLibTags(){
 function loadLib(){
   $('lib-msg').textContent='加载中…';
   libSel={}; updateSelInfo();
-  api('libList',{kw:$('lib-kw').value.trim(), tag:$('lib-tag').value, sort:$('lib-sort').value}).then(function(res){
+  api('libList',{kw:$('lib-kw').value.trim(), tag:$('lib-tag').value, sort:$('lib-sort').value, noOriginal:$('lib-no-original').checked}).then(function(res){
     if(res.code===401){ logout(); return; }
     var songs=(res&&res.songs)||[]; libCache={}; songs.forEach(function(s){libCache[s._id]=s;});
     if(!songs.length){ $('lib-table').innerHTML=''; $('lib-msg').textContent='没有匹配的歌曲。'; return; }
     $('lib-msg').textContent='共 '+(res.total||songs.length)+' 首，显示 '+songs.length+' 首';
     var h='<tr><th></th><th>歌名</th><th>原唱</th><th>版本</th><th>标签</th><th>热度</th><th>来源</th><th>操作</th></tr>';
     songs.forEach(function(s){
-      h+='<tr><td><input type="checkbox" onchange="toggleSel(\''+s._id+'\',this.checked)"/></td>'+
+      h+='<tr><td><input type="checkbox" data-id="'+s._id+'" onchange="toggleSel(\''+s._id+'\',this.checked)"/></td>'+
          '<td>'+esc(s.title)+'</td><td>'+esc(s.original||'')+'</td>'+
          '<td class="muted">'+esc((s.versions||[]).join('/'))+'</td>'+
          '<td class="wrap">'+((s.tags||[]).map(function(t){return '<span class="pill">'+esc(t)+'</span>';}).join(' ')||'<span class="muted">-</span>')+'</td>'+
@@ -779,7 +789,17 @@ function toggleSel(id,on){ if(on)libSel[id]=1; else delete libSel[id]; updateSel
 function updateSelInfo(){
   var n=Object.keys(libSel).length;
   $('lib-selinfo').textContent = n?('已选 '+n+' 首'):'';
-  $('lib-batchbtn').style.display = n?'':'none';
+  ['lib-batchbtn-tag','lib-batchbtn-orig','lib-batchbtn-del'].forEach(function(id){
+    var el=$(''+id); if(el) el.style.display=n?'':'none';
+  });
+  // 全选框同步状态
+  var all=$('lib-selectall');
+  if(all){ var rows=$('lib-table').querySelectorAll('input[type=checkbox][data-id]'); all.checked=rows.length>0&&Array.from(rows).every(function(r){return libSel[r.dataset.id];}); }
+}
+function toggleSelectAll(on){
+  var rows=$('lib-table').querySelectorAll('input[type=checkbox][data-id]');
+  rows.forEach(function(r){ r.checked=on; if(on)libSel[r.dataset.id]=1; else delete libSel[r.dataset.id]; });
+  updateSelInfo();
 }
 function delSong(id,title){
   if(!confirm('确定从歌库删除「'+title+'」？此操作不可恢复。')) return;
@@ -804,6 +824,25 @@ function saveSongEdit(){
     vjLink:$('se-vj').value, hasVj:!!$('se-vj').value.trim(), heat:$('se-heat').value };
   api('libUpdate',{songId:_songEditId, patch:patch}).then(function(res){
     if(res.code===0){ closeSongEdit(); loadLib(); } else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 批量填原唱
+function openBatchSetOriginal(){
+  var n=Object.keys(libSel).length;
+  var v=prompt('给选中的 '+n+' 首歌设置同一原唱（适合同一专辑/原唱的批量操作）：');
+  if(v==null||!v.trim()) return;
+  api('libBatchSetOriginal',{songIds:Object.keys(libSel), original:v.trim()}).then(function(res){
+    if(res.code===0){ alert(res.msg); libSel={}; updateSelInfo(); loadLib(); }
+    else if(res.code===401){ logout(); } else alert(res.msg||'失败');
+  });
+}
+// 批量删除
+function batchDeleteSongs(){
+  var n=Object.keys(libSel).length;
+  if(!confirm('确定删除选中的 '+n+' 首歌？此操作不可恢复。')) return;
+  api('libBatchDelete',{songIds:Object.keys(libSel)}).then(function(res){
+    if(res.code===0){ alert(res.msg); libSel={}; updateSelInfo(); loadLib(); }
+    else if(res.code===401){ logout(); } else alert(res.msg||'失败');
   });
 }
 // 批量打标签
@@ -903,24 +942,66 @@ function switchAnalyticsTab(t){
   });
   _analyticsCurTab = t;
 }
+// 分页状态
+var _rankData = { wish: [], play: [], collect: [] };
+var _rankPage = { wish: 0, play: 0, collect: 0 };
+var _RANK_PAGE_SIZE = 50;
+
+function renderRankPage(type) {
+  var data = _rankData[type];
+  var page = _rankPage[type];
+  var total = data.length;
+  var start = page * _RANK_PAGE_SIZE;
+  var slice = data.slice(start, start + _RANK_PAGE_SIZE);
+  var headers = {
+    wish: '<tr><th>#</th><th>歌名</th><th>原唱</th><th>许愿次数</th></tr>',
+    play: '<tr><th>#</th><th>歌名</th><th>原唱</th><th>演唱歌手</th><th>演出场数</th></tr>',
+    collect: '<tr><th>#</th><th>歌名</th><th>原唱</th><th>征集场数</th><th>总票数</th></tr>'
+  };
+  var h = headers[type];
+  slice.forEach(function(s, i) {
+    var rank = start + i + 1;
+    if (type === 'wish') h += '<tr><td class="muted">'+rank+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.count+'次</td></tr>';
+    else if (type === 'play') h += '<tr><td class="muted">'+rank+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td class="muted">'+esc((s.singers||[]).join('&'))+'</td><td>'+s.count+'场</td></tr>';
+    else h += '<tr><td class="muted">'+rank+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.polls+'</td><td>'+s.totalVotes+'票</td></tr>';
+  });
+  if (!slice.length) h += '<tr><td class="muted" colspan="5">暂无数据</td></tr>';
+  $( type+'-rank-table').innerHTML = h;
+  // 分页控件
+  var totalPages = Math.ceil(total / _RANK_PAGE_SIZE);
+  var pc = '';
+  if (totalPages > 1) {
+    pc += '<div style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px;color:var(--sub)">';
+    pc += '<button class="btn btn-sm" onclick="rankPageGo(''+type+'','+(page-1)+')" '+(page===0?'disabled':'')+'>上一页</button>';
+    pc += '<span>第 '+(page+1)+' / '+totalPages+' 页（共 '+total+' 条）</span>';
+    pc += '<button class="btn btn-sm" onclick="rankPageGo(''+type+'','+(page+1)+')" '+(page>=totalPages-1?'disabled':'')+'>下一页</button>';
+    pc += '</div>';
+  } else {
+    pc = '<div style="font-size:12px;color:var(--sub);margin-top:6px">共 '+total+' 条</div>';
+  }
+  $( type+'-rank-pager').innerHTML = pc;
+}
+
+function rankPageGo(type, page) {
+  var totalPages = Math.ceil(_rankData[type].length / _RANK_PAGE_SIZE);
+  if (page < 0 || page >= totalPages) return;
+  _rankPage[type] = page;
+  renderRankPage(type);
+}
+
 function loadSongDashboard(){
   $('analytics-msg').textContent='加载中…';
   api('songDashboard').then(function(res){
     if(res.code===401){logout();return;}
     $('analytics-msg').textContent='';
     if(res.code!==0){ $('analytics-msg').textContent='加载失败：'+res.msg; return; }
-    // 许愿热度榜
-    var h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>许愿次数</th></tr>';
-    (res.wishRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.count+'次</td></tr>'; });
-    $('wish-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
-    // 常唱歌曲榜
-    h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>演唱歌手</th><th>演出场数</th></tr>';
-    (res.playRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td class="muted">'+esc((s.singers||[]).join('&'))+'</td><td>'+s.count+'场</td></tr>'; });
-    $('play-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
-    // 征集候选
-    h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>征集场数</th><th>总票数</th></tr>';
-    (res.collectRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.polls+'</td><td>'+s.totalVotes+'票</td></tr>'; });
-    $('collect-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
+    _rankData.wish = res.wishRank || [];
+    _rankData.play = res.playRank || [];
+    _rankData.collect = res.collectRank || [];
+    _rankPage.wish = _rankPage.play = _rankPage.collect = 0;
+    renderRankPage('wish');
+    renderRankPage('play');
+    renderRankPage('collect');
   }).catch(function(e){ $('analytics-msg').textContent='请求失败：'+e; });
 }
 
