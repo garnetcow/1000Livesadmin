@@ -97,6 +97,7 @@
   .modal-ops{display:flex;align-items:center;justify-content:flex-end;gap:16px;margin-top:20px}
   .tab-btn{display:inline-block;font-size:14px;font-weight:600;color:var(--sub);padding:6px 14px;border-radius:8px;cursor:pointer;margin-right:6px}
   .tab-btn.active{color:var(--txt);background:rgba(46,158,168,.18)}
+  .btn-danger{background:rgba(218,144,180,.18);color:var(--pink);border:1px solid rgba(218,144,180,.4);border-radius:8px;padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600}
   .rank-num{display:inline-block;width:22px;text-align:center;font-weight:700;color:var(--pink)}
   .score{font-weight:700;color:var(--teal)}
   .recent-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok);margin-left:6px}
@@ -147,7 +148,8 @@
     <div class="nav-item" data-view="recycle" onclick="nav('recycle')"><span class="t">🗑 回收站</span></div>
     <div class="nav-item" data-view="fans" onclick="nav('fans')"><span class="t">👥 粉丝看板</span></div>
     <div class="nav-item" data-view="songlib" onclick="nav('songlib')"><span class="t">🎵 歌库建设</span></div>
-    <div class="nav-item" data-view="analytics" onclick="nav('analytics')"><span class="t">📈 数据看板</span><span class="soon">规划中</span></div>
+    <div class="nav-item" data-view="analytics" onclick="nav('analytics')"><span class="t">📈 歌单数据</span></div>
+    <div class="nav-item" data-view="polls" onclick="nav('polls')"><span class="t">🎤 征集管理</span></div>
     <div class="nav-item" data-view="review" onclick="nav('review')"><span class="t">📝 活动复盘</span><span class="soon">规划中</span></div>
     <div class="foot">
       <div class="who">已登录 · 管理员</div>
@@ -294,7 +296,10 @@
             <span class="tab-btn" id="ltab-import" onclick="switchLibTab('import')">📥 批量录入</span>
             <span class="tab-btn" id="ltab-dup" onclick="switchLibTab('dup')">🔍 查重合并</span>
           </div>
-          <button class="reload" onclick="reloadLibTab()">刷新</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn-danger" id="sync-btn" onclick="doSyncSongLib()" title="把许愿/征集/活动歌单中的歌曲一键同步到歌库">🔄 一键同步歌单→歌库</button>
+            <button class="reload" onclick="reloadLibTab()">刷新</button>
+          </div>
         </div>
 
         <!-- 浏览管理 -->
@@ -330,7 +335,45 @@
         </div>
       </div>
     </div>
-    <div id="view-analytics" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📈</div><h3>数据看板</h3><p>规划中：活动热度、报名趋势、投票分布、粉丝画像等多维分析图表。</p></div></div></div>
+    <!-- 歌单数据看板 -->
+    <div id="view-analytics" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <span class="tab-btn active" id="atab-wish" onclick="switchAnalyticsTab('wish')">💌 许愿热度榜</span>
+            <span class="tab-btn" id="atab-play" onclick="switchAnalyticsTab('play')">🎵 常唱歌曲榜</span>
+            <span class="tab-btn" id="atab-collect" onclick="switchAnalyticsTab('collect')">🎤 征集候选</span>
+          </div>
+          <button class="reload" onclick="loadSongDashboard()">刷新</button>
+        </div>
+        <div id="analytics-msg" class="sub-line">点击刷新加载数据</div>
+        <!-- 许愿热度榜 -->
+        <div id="atab-wish-body">
+          <div class="table-wrap"><table class="dt" id="wish-rank-table"></table></div>
+        </div>
+        <!-- 常唱歌曲榜 -->
+        <div id="atab-play-body" style="display:none">
+          <div class="table-wrap"><table class="dt" id="play-rank-table"></table></div>
+        </div>
+        <!-- 征集候选 -->
+        <div id="atab-collect-body" style="display:none">
+          <div class="table-wrap"><table class="dt" id="collect-rank-table"></table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 征集管理 -->
+    <div id="view-polls" class="hidden">
+      <div class="panel">
+        <div class="panel-head">
+          <h3>征集管理</h3>
+          <button class="reload" onclick="loadPolls()">刷新</button>
+        </div>
+        <div id="polls-msg" class="sub-line">加载中…</div>
+        <div id="polls-list"></div>
+      </div>
+    </div>
+
     <div id="view-review" class="hidden"><div class="panel"><div class="placeholder"><div class="big">📝</div><h3>活动复盘</h3><p>规划中：单场活动的全链路数据汇总，自动生成复盘报告。</p></div></div></div>
   </main>
 </div>
@@ -426,8 +469,8 @@ function setConn(ok){
   $('conn-dot').className='dot '+(ok?'ok':'err');
   $('conn-text').textContent = ok? '已连接云数据库' : '连接异常';
 }
-var VIEWS=['overview','import','recycle','fans','songlib','analytics','review'];
-var TITLES={overview:'数据概览',import:'历史活动导入',recycle:'回收站',fans:'粉丝看板',songlib:'歌库建设',analytics:'数据看板',review:'活动复盘'};
+var VIEWS=['overview','import','recycle','fans','songlib','analytics','polls','review'];
+var TITLES={overview:'数据概览',import:'历史活动导入',recycle:'回收站',fans:'粉丝看板',songlib:'歌库建设',analytics:'歌单数据',polls:'征集管理',review:'活动复盘'};
 function nav(v){
   VIEWS.forEach(function(x){ $('view-'+x).classList.toggle('hidden', x!==v); });
   document.querySelectorAll('.nav-item').forEach(function(el){ el.classList.toggle('active', el.dataset.view===v); });
@@ -436,6 +479,8 @@ function nav(v){
   if(v==='recycle') loadRecycle();
   if(v==='fans') loadFans();
   if(v==='songlib'){ loadLibTags(); switchLibTab('browse'); }
+  if(v==='analytics'){ loadSongDashboard(); }
+  if(v==='polls'){ loadPolls(); }
 }
 function loadDashboard(){
   api('dashboard').then(function(res){
@@ -834,6 +879,77 @@ function doMerge(gi, ids){
       i++; next();
     }).catch(function(){ i++; next(); });
   })();
+}
+
+
+/* ===== 一键同步歌单→歌库 ===== */
+function doSyncSongLib(){
+  if(!confirm('将把许愿点歌、征集候选、历史活动歌单中所有歌曲同步到歌库（只新增，不覆盖已有数据）。可能需要 30-60 秒，请稍候。')) return;
+  var btn=$('sync-btn'); btn.disabled=true; btn.textContent='⏳ 同步中…';
+  api('syncSongLib').then(function(res){
+    btn.disabled=false; btn.textContent='🔄 一键同步歌单→歌库';
+    if(res.code===401){logout();return;}
+    if(res.code===0){ alert('✅ '+res.msg); loadLib(); loadDashboard(); }
+    else alert('❌ '+res.msg);
+  }).catch(function(e){ btn.disabled=false; btn.textContent='🔄 一键同步歌单→歌库'; alert('请求失败：'+e); });
+}
+
+/* ===== 歌单数据看板 ===== */
+var _analyticsCurTab = 'wish';
+function switchAnalyticsTab(t){
+  ['wish','play','collect'].forEach(function(x){
+    $('atab-'+x).classList.toggle('active', x===t);
+    $('atab-'+x+'-body').style.display = x===t ? '' : 'none';
+  });
+  _analyticsCurTab = t;
+}
+function loadSongDashboard(){
+  $('analytics-msg').textContent='加载中…';
+  api('songDashboard').then(function(res){
+    if(res.code===401){logout();return;}
+    $('analytics-msg').textContent='';
+    if(res.code!==0){ $('analytics-msg').textContent='加载失败：'+res.msg; return; }
+    // 许愿热度榜
+    var h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>许愿次数</th></tr>';
+    (res.wishRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.count+'次</td></tr>'; });
+    $('wish-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
+    // 常唱歌曲榜
+    h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>演唱歌手</th><th>演出场数</th></tr>';
+    (res.playRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td class="muted">'+esc((s.singers||[]).join('&'))+'</td><td>'+s.count+'场</td></tr>'; });
+    $('play-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
+    // 征集候选
+    h='<tr><th>#</th><th>歌名</th><th>原唱</th><th>征集场数</th><th>总票数</th></tr>';
+    (res.collectRank||[]).forEach(function(s,i){ h+='<tr><td class="muted">'+(i+1)+'</td><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'')+'</td><td>'+s.polls+'</td><td>'+s.totalVotes+'票</td></tr>'; });
+    $('collect-rank-table').innerHTML = h || '<tr><td class="muted">暂无数据</td></tr>';
+  }).catch(function(e){ $('analytics-msg').textContent='请求失败：'+e; });
+}
+
+/* ===== 征集管理 ===== */
+function loadPolls(){
+  $('polls-msg').textContent='加载中…';
+  $('polls-list').innerHTML='';
+  api('listPolls').then(function(res){
+    if(res.code===401){logout();return;}
+    $('polls-msg').textContent='';
+    if(res.code!==0){ $('polls-msg').textContent='加载失败：'+res.msg; return; }
+    if(!res.list||!res.list.length){ $('polls-msg').textContent='还没有征集'; return; }
+    var h='';
+    res.list.forEach(function(p){
+      var statusText = {open:'征集中', voting:'投票中', ended:'已截止', draft:'草稿'}[p.status] || p.status;
+      var statusColor = {open:'var(--teal)',voting:'var(--pink)',ended:'var(--sub)',draft:'var(--sub)'}[p.status]||'var(--sub)';
+      h+='<div class="panel" style="margin-bottom:12px"><div class="panel-head" style="align-items:flex-start"><div><strong>'+esc(p.title||'未命名征集')+'</strong><span style="margin-left:8px;font-size:12px;color:'+statusColor+'">'+statusText+'</span>';
+      if(p.deadline) h+=' <span class="muted" style="font-size:12px">截止 '+p.deadline+'</span>';
+      h+='</div><span class="muted">'+p.songCount+'首 / 共'+p.totalVotes+'票</span></div>';
+      if(p.songs&&p.songs.length){
+        h+='<table class="dt"><tr><th>歌名</th><th>原唱</th><th>票数</th></tr>';
+        p.songs.forEach(function(s){ h+='<tr><td>'+esc(s.title)+'</td><td class="muted">'+esc(s.original||'-')+'</td><td>'+s.votes+'票</td></tr>'; });
+        if(p.songCount>10) h+='<tr><td colspan="3" class="muted">… 共 '+p.songCount+' 首候选</td></tr>';
+        h+='</table>';
+      }
+      h+='</div>';
+    });
+    $('polls-list').innerHTML=h;
+  }).catch(function(e){ $('polls-msg').textContent='请求失败：'+e; });
 }
 
 function setMsg(id,t,cls){ var e=$(id); if(!e) return; e.textContent=t; e.className='msg '+(cls||''); }
